@@ -2,25 +2,31 @@ from rest_framework import serializers
 from profiles.models import ClientProfile, FreelancerProfile
 
 
-class ClientProfileSerializer(serializers.ModelSerializer):
-    class Meta: 
+class ClientProfileDetailSerializer(serializers.ModelSerializer):
+    class Meta:
         model = ClientProfile
         exclude = ("user",)
+        read_only_fields = ("id",)
+    
 
-    def create(self, validated_data):
+class ClientProfileSerializer(ClientProfileDetailSerializer):
+    def validate(self, attrs):
         user = self.context["request"].user
-        if hasattr(user, "client_profile"):
+        if ClientProfile.objects.filter(user=user).exists():
             raise serializers.ValidationError("Client profile already exists.")
-        return ClientProfile.objects.create(user=user,**validated_data)
+        return attrs
 
-class FreelancerProfileSerializer(serializers.ModelSerializer):
+
+class FreelancerProfileDetailSerializer(serializers.ModelSerializer):
     class Meta: 
         model = FreelancerProfile
         exclude = ("user",)
+        read_only_fields = ("id",)
 
-    def create(self, validated_data):
+
+class FreelancerProfileSerializer(FreelancerProfileDetailSerializer):
+    def validate(self, attrs):
         user = self.context["request"].user
-        if hasattr(user, "freelancer_profile"):
+        if FreelancerProfile.objects.filter(user=user).exists():
             raise serializers.ValidationError("Freelancer profile already exists.")
-        return FreelancerProfile.objects.create(user=user,**validated_data)
-    
+        return attrs
