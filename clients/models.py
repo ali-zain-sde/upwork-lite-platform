@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import User
 from core.models import BaseModel
+from clients.models import ClientProfile
 
 
 class ClientProfile(BaseModel):
@@ -13,14 +14,13 @@ class ClientProfile(BaseModel):
     company_website = models.URLField(blank=True)
 
 
-class FreelancerProfile(BaseModel):
-    user = models.OneToOneField(
-        User,
+class Project(BaseModel):
+    client = models.ForeignKey(
+        ClientProfile,
         on_delete=models.CASCADE,
-        related_name='freelancer_profile'
+        related_name="clients"
     )
     title = models.CharField(max_length=255)
-    skills = models.TextField()
-    hourly_rate = models.DecimalField(max_digits=8, decimal_places=2)
-    bio = models.TextField()
-    portfolio_link = models.URLField(blank=True)
+    description = models.TextField()
+    budget = models.DecimalField(max_digits=10, decimal_places=2)
+    is_open = models.BooleanField(default=True)

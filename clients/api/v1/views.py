@@ -1,13 +1,13 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from profiles.permissions import IsClient, IsFreelancer
-from profiles.models import ClientProfile, FreelancerProfile
-from profiles.api.v1.serializers import (
+from core.permissions import IsClient
+from clients.models import ClientProfile, Project
+from clients.api.v1.serializers import ProjectSerializer
+from clients.api.v1.serializers import (
     ClientProfileSerializer,
-    FreelancerProfileSerializer,
     ClientProfileDetailSerializer,
-    FreelancerProfileDetailSerializer,
+    ProjectSerializer
     )
 
 
@@ -27,17 +27,22 @@ class ClientProfileRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAP
         return get_object_or_404(ClientProfile, user=self.request.user)
     
 
-class FreelancerProfileCreateAPIView(generics.CreateAPIView):
-    serializer_class = FreelancerProfileSerializer
-    permission_classes = [IsAuthenticated]
-    
+class ProjectCreateAPIView(generics.CreateAPIView):
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated, IsClient]
+
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(
+            client=self.request.user.client_profile
+        )
 
 
-class FreelancerProfileRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = FreelancerProfileDetailSerializer
-    permission_classes = [IsAuthenticated, IsFreelancer]
-    
-    def get_object(self):
-        return get_object_or_404(FreelancerProfile, user=self.request.user)
+class ProjectListAPIView(generics.ListAPIView):
+    queryset = Project.objects.all().order_by("-created")
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class ProjectDetailRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
