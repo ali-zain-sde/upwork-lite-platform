@@ -1,26 +1,52 @@
 from rest_framework import serializers
-from clients.models import ClientProfile, Project
-from freelancers.api.v1.serializers import ProposalSerializer
+from clients.models import Client, Project
+from freelancers.api.v1.serializers import ProposalDetailSerializer, ProposalMiniSerializer
 
 
-class ClientProfileDetailSerializer(serializers.ModelSerializer):
+class ClientSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ClientProfile
-        exclude = ("user",)
-        read_only_fields = ("id",)
+        model = Client
+        fields = (
+            "company_name",
+            "company_website",
+        )
+
+
+class ProjectCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = (
+            "title",
+            "budget",
+            "description",
+        )
     
 
-class ClientProfileSerializer(ClientProfileDetailSerializer):
-    def validate(self, attrs):
-        user = self.context["request"].user
-        if ClientProfile.objects.filter(user=user).exists():
-            raise serializers.ValidationError("Client profile already exists.")
-        return attrs
+class ProjectListSerializer(serializers.ModelSerializer):
+    proposals = ProposalMiniSerializer(many=True, read_only=True)
+    class Meta:
+        model = Project
+        fields = (
+            "id",
+            "title",
+            "budget",
+            "is_open",
+            "proposals",
+        )
+        read_only_fields = ("id",)
 
 
-class ProjectSerializer(serializers.ModelSerializer):
-    proposals = ProposalSerializer(many=True, read_only=True)
+class ProjectDetailSerializer(serializers.ModelSerializer):
+    proposals = ProposalDetailSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
-        fields = "__all__"
+        fields = (
+            "id",
+            "title",
+            "description",
+            "budget",
+            "is_open",
+            "proposals",
+        )
+        read_only_fields = ("id",)

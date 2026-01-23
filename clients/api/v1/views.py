@@ -1,48 +1,44 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
-from core.permissions import IsClient
-from clients.models import ClientProfile, Project
-from clients.api.v1.serializers import ProjectSerializer
+from clients.models import Client, Project
 from clients.api.v1.serializers import (
-    ClientProfileSerializer,
-    ClientProfileDetailSerializer,
-    ProjectSerializer
+    ClientSerializer,
+    ProjectListSerializer,
+    ProjectDetailSerializer,
+    ProjectCreateSerializer,
     )
 
 
-class ClientProfileCreateAPIView(generics.CreateAPIView):
-    serializer_class = ClientProfileSerializer
-    permission_classes = [IsAuthenticated]
+class ClientCreateAPIView(generics.CreateAPIView):
+    serializer_class = ClientSerializer
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
 
-class ClientProfileRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = ClientProfileDetailSerializer
-    permission_classes = [IsAuthenticated, IsClient]
+class ClientRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ClientSerializer
 
     def get_object(self):
-        return get_object_or_404(ClientProfile, user=self.request.user)
+        return get_object_or_404(Client, user=self.request.user)
     
 
-class ProjectCreateAPIView(generics.CreateAPIView):
-    serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated, IsClient]
+class ProjectListCreateAPIView(generics.ListCreateAPIView):
+    def get_queryset(self):
+        return Project.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(
-            client=self.request.user.client_profile
+            client=self.request.user.client
         )
-
-
-class ProjectListAPIView(generics.ListAPIView):
-    queryset = Project.objects.all().order_by("-created")
-    serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return ProjectCreateSerializer
+        else:
+            return ProjectListSerializer
 
 
 class ProjectDetailRetrieveAPIView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
+    serializer_class = ProjectDetailSerializer

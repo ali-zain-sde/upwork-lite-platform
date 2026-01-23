@@ -1,16 +1,14 @@
 from django.urls import path
 from clients.api.v1.views import (
-    ProjectListAPIView,
-    ProjectCreateAPIView,
+    ProjectListCreateAPIView,
     ProjectDetailRetrieveAPIView,
-    ClientProfileCreateAPIView, 
-    ClientProfileRetrieveUpdateDestroyAPIView,
+    ClientCreateAPIView, 
+    ClientRetrieveUpdateDestroyAPIView,
     )
 
 urlpatterns = [
-    path('', ProjectListAPIView.as_view(), name='project-list'),
-    path('project/', ProjectCreateAPIView.as_view(), name='project-create'),
-    path('<str:pk>/', ProjectDetailRetrieveAPIView.as_view(), name='project-detail'),
-    path("profile-view/", ClientProfileCreateAPIView.as_view(), name='profile-view'),
-    path("profile-update/", ClientProfileRetrieveUpdateDestroyAPIView.as_view(), name='profile-update'),
+    path('projects/', ProjectListCreateAPIView.as_view(), name='projects'),
+    path('projects/<uuid:pk>/', ProjectDetailRetrieveAPIView.as_view(), name='project_detail'),
+    path("profile/", ClientCreateAPIView.as_view(), name='client_profile'),
+    path("profile/me/", ClientRetrieveUpdateDestroyAPIView.as_view(), name='client_profile_update'),
 ]

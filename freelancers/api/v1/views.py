@@ -1,47 +1,47 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
-from core.permissions import  IsFreelancer
-from freelancers.models import FreelancerProfile, Proposal
+from freelancers.models import Freelancer, Proposal
+from clients.models import Project
 from freelancers.api.v1.serializers import (  
-    FreelancerProfileSerializer,
-    FreelancerProfileDetailSerializer,
-    ProposalSerializer,
+    FreelancerSerializer,
+    ProposalDetailSerializer,
+    ProposalMiniSerializer,
     )
     
 
-class FreelancerProfileCreateAPIView(generics.CreateAPIView):
-    serializer_class = FreelancerProfileSerializer
-    permission_classes = [IsAuthenticated]
-    
+class FreelancerCreateAPIView(generics.CreateAPIView):
+    serializer_class = FreelancerSerializer
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
 
-class FreelancerProfileRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = FreelancerProfileDetailSerializer
-    permission_classes = [IsAuthenticated, IsFreelancer]
+class FreelancerRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = FreelancerSerializer
     
     def get_object(self):
-        return get_object_or_404(FreelancerProfile, user=self.request.user)
+        return get_object_or_404(Freelancer, user=self.request.user)
 
 
-class ProposalListAPIView(generics.ListAPIView):
-    queryset = Proposal.objects.all().order_by("-created")
-    serializer_class = ProposalSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class ProposalCreateAPIView(generics.CreateAPIView):
-    serializer_class = ProposalSerializer
-    permission_classes = [IsAuthenticated, IsFreelancer]
-
+class ProposalListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(
-            freelancer=self.request.user.freelancer_profile
+            freelancer=self.request.user.freelancer,
+            project=get_object_or_404(Project, id=self.kwargs["project_id"])
         )
-    
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return ProposalDetailSerializer
+        else:
+            return ProposalMiniSerializer
+
+    def get_queryset(self):
+        return Proposal.objects.filter(
+            project_id=self.kwargs["project_id"]
+        )
+
 
 class ProposalRetrieveAPIView(generics.RetrieveAPIView):
     queryset = Proposal.objects.all()
-    serializer_class = ProposalSerializer
+    serializer_class = ProposalDetailSerializer

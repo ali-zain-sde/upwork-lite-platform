@@ -90,7 +90,6 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_PAGINATION_CLASS": "core.pagination.StandardPagination",
-    "PAGE_SIZE": 10,
 }
 
 SIMPLE_JWT = {
