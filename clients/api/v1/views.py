@@ -1,44 +1,75 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from rest_framework import generics
+from rest_framework.permissions import AllowAny
 from clients.models import Client, Project
 from clients.api.v1.serializers import (
-    ClientSerializer,
-    ProjectListSerializer,
-    ProjectDetailSerializer,
+    ClientCreateSerializer,
+    ClientRetreiveUpdateSerializer,
     ProjectCreateSerializer,
+    ProjectUpdateSerializer,
+    ProjectRetrieveSerializer,
+    ProjectListSerializer,
+    ProjectProposalSerializer,
     )
 
 
 class ClientCreateAPIView(generics.CreateAPIView):
-    serializer_class = ClientSerializer
+    serializer_class = ClientCreateSerializer
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
 
-class ClientRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = ClientSerializer
-
+class ClientRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = ClientRetreiveUpdateSerializer
+    
     def get_object(self):
         return get_object_or_404(Client, user=self.request.user)
-    
+   
 
-class ProjectListCreateAPIView(generics.ListCreateAPIView):
-    def get_queryset(self):
-        return Project.objects.all()
+class ProjectCreateAPIView(generics.CreateAPIView):
+    serializer_class = ProjectCreateSerializer
 
     def perform_create(self, serializer):
         serializer.save(
             client=self.request.user.client
         )
+
+
+class ProjectListAPIView(generics.ListAPIView):
+    serializer_class = ProjectListSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return Project.objects.filter(
+            Q(status="open") | Q(status="draft")
+        )
     
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return ProjectCreateSerializer
-        else:
-            return ProjectListSerializer
+
+class ProjectRetrieveAPIView(generics.RetrieveAPIView):
+    serializer_class = ProjectRetrieveSerializer    
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return Project.objects.filter(
+        id=self.kwargs["pk"]
+    )
 
 
-class ProjectDetailRetrieveAPIView(generics.RetrieveAPIView):
-    queryset = Project.objects.all()
-    serializer_class = ProjectDetailSerializer
+class ProjectRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ProjectUpdateSerializer
+
+    def get_queryset(self):
+        return Project.objects.filter(
+            client=self.request.user.client,
+        )
+    
+
+class ProjectProposalListAPIView(generics.ListAPIView):
+    serializer_class = ProjectProposalSerializer
+
+    def get_queryset(self):
+        return Project.objects.filter(
+            client=self.request.user.client,
+        )

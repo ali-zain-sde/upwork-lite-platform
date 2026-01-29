@@ -2,50 +2,60 @@ from rest_framework import serializers
 from freelancers.models import Proposal, Freelancer
 
 
-class FreelancerSerializer(serializers.ModelSerializer):
+class FreelancerCreateSerializer(serializers.ModelSerializer):
     class Meta: 
         model = Freelancer
         fields = (
             "title",
-            "skills",
             "hourly_rate",
             "bio",
             "portfolio_link",
+            "skills",
         )
-    
 
-class ProposalDetailSerializer(serializers.ModelSerializer):
+
+class FreelancerRetrieveUpdateSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = Freelancer
+        fields = (
+            "id",
+            "title",
+            "hourly_rate",
+            "bio",
+            "portfolio_link",
+            "skills",
+        )
+        read_only_fields = ("id",)
+
+
+class ProposalCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Proposal
+        fields = (
+            "cover_letter",
+            "proposed_rate",
+        )
+
+
+class ProposalListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proposal
         fields = (
             "id",
-            "freelancer",
-            "project",
+            "cover_letter",
+            "proposed_rate",
+            "project_id",            
+        )
+
+
+class ProposalUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Proposal
+        fields = (
+            "id",
             "cover_letter",
             "proposed_rate",
             "created",
             "modified",
         )
-        read_only_fields = (
-            'id',
-            'freelancer',
-            'project',
-            "created",
-            "modified",
-        )
-
-
-class ProposalMiniSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Proposal
-        fields = (
-            "id",
-            "project",
-            "proposed_rate", 
-            "freelancer",
-            )
-        read_only_fields = (
-            "id", 
-            "freelancer",            
-            )
-    
+        read_only_fields = ("id",)

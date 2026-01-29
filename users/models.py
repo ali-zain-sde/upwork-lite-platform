@@ -8,7 +8,6 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     
     USERNAME_FIELD = 'email'
-    EMAIL_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()

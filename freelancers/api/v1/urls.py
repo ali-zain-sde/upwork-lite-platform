@@ -1,15 +1,23 @@
 from django.urls import path
 from freelancers.api.v1.views import (
-    ProposalListCreateAPIView,
-    ProposalRetrieveAPIView,
     FreelancerCreateAPIView,
-    FreelancerRetrieveUpdateDestroyAPIView,
+    FreelancerRetrieveUpdateAPIView,
+    ProposalCreateAPIView,
+    ProposalListAPIView,
+    ProposalRetrieveUpdateDestroyAPIView,
     )
 
 urlpatterns = [
-    path('projects/<uuid:project_id>/proposals/', ProposalListCreateAPIView.as_view(), name='project_proposals'),
-    path('proposals/create/', ProposalListCreateAPIView.as_view(), name='proposal_create'),
-    path('proposals/<uuid:pk>/', ProposalRetrieveAPIView.as_view(), name='proposal_detail'),
-    path("profile/", FreelancerCreateAPIView.as_view(), name='freelancer_profile'),
-    path("profile/me/", FreelancerRetrieveUpdateDestroyAPIView.as_view(), name='freelancer_profile_update'),
+    # Freelancer profile (self)
+    path("", FreelancerRetrieveUpdateAPIView.as_view()),
+    path("create/", FreelancerCreateAPIView.as_view()),
+
+    # create proposal against a project
+    path("<uuid:pk>/", ProposalCreateAPIView.as_view()),
+
+    # list freelancer own proposals (freelancer dashboard)
+    path("proposals/", ProposalListAPIView.as_view()),
+
+    # retrieve/update freelancer his own proposal
+    path("proposals/<uuid:pk>/", ProposalRetrieveUpdateDestroyAPIView.as_view()),
 ]

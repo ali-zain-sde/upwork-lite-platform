@@ -5,12 +5,23 @@ from core.models import BaseModel
 User = get_user_model()
 
 
+class Skill(BaseModel):
+    name = models.CharField(max_length=100, unique=True)
+
+
 class Freelancer(BaseModel):
+    full_name = models.CharField(max_length=50)
     title = models.CharField(max_length=255)
-    skills = models.TextField()
     hourly_rate = models.DecimalField(max_digits=8, decimal_places=2)
     bio = models.TextField()
-    portfolio_link = models.URLField(blank=True)
+    portfolio_link = models.URLField(blank=True, null=True)
+
+    skills = models.ManyToManyField(
+        "freelancers.Skill",
+        related_name="freelancers",
+        blank=True, 
+        null=True,
+    )
 
     user = models.OneToOneField(
         User,
@@ -35,4 +46,9 @@ class Proposal(BaseModel):
     )
 
     class Meta:
-        ordering = ["-created"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["freelancer", "project"],
+                name="unique_freelancer_project_bid"
+            )
+        ]
